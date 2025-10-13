@@ -1,6 +1,6 @@
 # 0.2b9 (2025-10-13)
 
-* developer renaming
+* rename developer
 
 # 0.2b8 (2025-06-01)
 
