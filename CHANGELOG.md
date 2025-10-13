@@ -1,3 +1,7 @@
+# 0.2b9 (2025-10-13)
+
+* developer renaming
+
 # 0.2b8 (2025-06-01)
 
 * improve syntax of Bash scripts

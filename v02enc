@@ -2,7 +2,7 @@
 <?php
 
 /*
-  Copyright (c) 2023-2025, Yahe
+  Copyright (c) 2023-2025, WeizenSpreu
   Copyright (c) 2016-2023, SysEleven GmbH
   All rights reserved.
 
@@ -1227,7 +1227,7 @@ function print_info($string) {
 }
 
 function print_help() {
-  print("v02enc v0.2b8\n");
+  print("v02enc v0.2b9\n");
   print("\n");
   print("Usage:\n");
   print("======\n");

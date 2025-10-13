@@ -221,7 +221,7 @@ v02enc --decrypt --key - ./example.v02enc
 
 ## Origin
 
-The encryption scheme originates from [Shared-Secrets](https://github.com/yahesh/shared-secrets). Shared-Secrets implements `v00` as a password-based encryption scheme supporting a single recipient and `v01` as an RSA-based encryption scheme supporting multiple recipients.
+The encryption scheme originates from [Shared-Secrets](https://github.com/weizenspreu/shared-secrets). Shared-Secrets implements `v00` as a password-based encryption scheme supporting a single recipient and `v01` as an RSA-based encryption scheme supporting multiple recipients.
 
 `v02enc` extend the existing encryption schemes with `v02` as a password-based encryption scheme supporting multiple recipients.
 
