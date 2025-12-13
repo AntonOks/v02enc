@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+# set a default for the key file if none is given
+if [[ -z "${V02ENC_KEY}" ]]; then
+  V02ENC_KEY="-"
+fi
+
+# set a default for the passphrase if non is given
+if [[ -z "${V02ENC_PASSPHRASE}" ]]; then
+  # set to empty string by default
+  V02ENC_PASSPHRASE=""
+
+  if [[ "${V02ENC_KEY}" == "-" ]]; then
+    # check if there is a key file
+    if [[ -f ~/.v02enc ]]; then
+      # read the key file
+      V02ENC_PASSPHRASE="$(/usr/bin/env cat ~/.v02enc | /usr/bin/env xxd -p | /usr/bin/env tr -d "\n")"
+    else
+      # check if we are running macOS
+      OS="$(/usr/bin/env uname -s | /usr/bin/env tr "[:upper:]" "[:lower:]")"
+
+      if [[ "${OS}" == "darwin" ]]; then
+        # try to read the default keychain value
+        TMP="$(/usr/bin/env security find-generic-password -a "$(/usr/bin/env whoami)" -s "v02enc" -w 2>/dev/null)"
+
+        if [[ "${?}" -eq "0" ]]; then
+          V02ENC_PASSPHRASE="${TMP}"
+        fi
+      fi
+    fi
+  fi
+fi
+
+SCRIPT_DIR="$(/usr/bin/env dirname "$(/usr/bin/env realpath "${0}")")"
+
+# handle parameters
+ACTION="${1}"
+INTERFACE="${2}"
+
+# prepare the output
+EXITCODE="0"
+
+if [[ ${V02ENC_KEY} == "-" ]] || [[ -f "${V02ENC_KEY}" ]]; then
+  if [[ "${ACTION}" == "down" ]] || [[ "${ACTION}" == "up" ]]; then
+    # check if we are running macOS
+    OS="$(/usr/bin/env uname -s | /usr/bin/env tr "[:upper:]" "[:lower:]")"
+
+    BREW_PREFIX=""
+    if [[ "${OS}" == "darwin" ]]; then
+      BREW_PREFIX="$(/usr/bin/env brew --prefix)"
+    fi
+
+    INPUT="${BREW_PREFIX}/etc/wireguard/${INTERFACE}.conf.v02enc"
+    OUTPUT="${BREW_PREFIX}/etc/wireguard/${INTERFACE}.conf"
+
+    if [[ -f "${INPUT}" ]]; then
+      if [[ ! -f "${OUTPUT}" ]]; then
+        /usr/bin/env ln -s /dev/stdin "${OUTPUT}"
+
+        if [[ "${?}" -eq "0" ]]; then
+          # decrypt the configuration and provide it to wg-quick via STDIN
+          echo -n "${V02ENC_PASSPHRASE}" | /usr/bin/env xxd -p -r | "${SCRIPT_DIR}/v02enc" --decrypt --key "${V02ENC_KEY}" --input "${INPUT}" --output "-" | /usr/bin/env wg-quick "${ACTION}" "${OUTPUT}"
+
+          # keep exit code
+          EXITCODE="${?}"
+
+          # try to delete the temporary file either way
+          /usr/bin/env rm -f "${OUTPUT}"
+        fi
+      else
+        echo "ERROR: decrypted Wireguard configuration already exists: ${INTERFACE}" >&2
+        EXITCODE="4"
+      fi
+    else
+      echo "ERROR: encrypted Wireguard configuration does not exist: ${INTERFACE}" >&2
+      EXITCODE="3"
+    fi
+  else
+    echo "ERROR: unknown action provided: ${ACTION}" >&2
+    EXITCODE="2"
+  fi
+else
+  echo "ERROR: v02enc key file does not exist: ${V02ENC_KEY}" >&2
+  EXITCODE="1"
+fi
+
+# set the exit code
+exit "${EXITCODE}"

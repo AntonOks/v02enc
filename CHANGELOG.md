@@ -1,3 +1,7 @@
+# 0.2b10 (2025-12-13)
+
+* add `v02wg-quick`
+
 # 0.2b9 (2025-10-13)
 
 * rename developer
